@@ -1,21 +1,27 @@
 from django.shortcuts import render,redirect
-from main.models import User
+from django.http import HttpResponse
+from main.models import User,Files,FileAccess
 from django.contrib.auth import authenticate
+import datetime
 # Create your views here.
 
 #enabling user  session 
 def enableSession(request,userId,userName):
      request.session['userId']=userId
      request.session['userName']=userName
-     
-#fetching the user      
+#fetching  the user by email
+def fetchUserByEmail(userEmail):
+    allUser=User.objects.all()
+    for user in allUser:
+        if user.userEmail==userEmail:
+            return {'userName':user.name,'email':user.userEmail,'userId':user.id}    
+        return {'userName':"not found",'email':"not found"}
+#fetching the user by username and password      
 def fetchUser(request,userName,password):
      allUser=User.objects.all()
      for user in allUser:
             if user.name==userName and password==password:
-                print("found")
                 enableSession(request,user.id,user.name)
-                print("after")
                 return True
      return  False   
  
@@ -28,7 +34,6 @@ def signUp(request):
         confirmPassword=request.POST['confirmPassword']
         #if password and confirmPassword do not match 
         if password!=confirmPassword:
-            print("password are not matching")
             message="Password are not matching"
             return render(request,'signUp.html',{'passwordMatch':message})
         allUser=User.objects.all()
@@ -42,7 +47,6 @@ def signUp(request):
         user=newUser.save()
         #enabling user session
         if fetchUser(request,userName,password):
-            print("this")
             return redirect('/')
             
         return render(request,'index.html')
@@ -65,15 +69,43 @@ def login(request):
 
 #function for view page/index page
 def index(request):
-    print("this")
     #loading session
     currentSession=request.session.get('userId')
-    return render(request,'index.html',{'currentSession':currentSession})
+    #loading files of the user 
+    userFiles=Files.objects.filter(userId=request.session.get('userId'))
+    sharedFiles=FileAccess.objects.filter(userId=request.session.get('userId'))
+    allFiles=Files.objects.all()
+    
+    
+    
+    
+    return render(request,'index.html',{'currentSession':currentSession,'userFiles':userFiles,'sharedFiles':sharedFiles,'allFiles':allFiles})
 #function for uploading file
 def uploadFile(request):
-    return render(request,'index.html')
+    if request.method=='POST':
+        userId=request.session['userId']
+        content=request.FILES.get('Uploadfile')
+        #changing the filename by appending userId to avoid duplication
+        content.name=str(userId)+content.name
+        fileName=content.name
+        dateUploaded=datetime.date.today()
+        newFile=Files(userId=userId,fileName=fileName,content=content,dateUploaded=dateUploaded)
+        newFile.save()
+    return redirect("/")
 #function for searching other peers
 def searchUser(request):
+    if request.method=='POST':
+        userEmail=request.POST['userEmail']
+        fileId=request.POST['fileId']
+        searchUser=fetchUserByEmail(userEmail)
+        fromRoute=request.POST['routeStatus']
+        if fromRoute=="fromIndex":
+           if searchUser['userName']!="not found":
+              userId=searchUser['userId']
+              fileShare=FileAccess(userId=userId,fileId=fileId)
+              fileShare.save()  
+           return render(request,'userDetail.html',{'userDetail':searchUser,'shared':"successfully shared"})
+        return render(request,'userDetail.html',{'userDetail':searchUser})
     return render(request,'index.html')
 #function for sharing file
 def shareFile(request):
@@ -81,3 +113,7 @@ def shareFile(request):
 #function for logout
 def logout(request):
     return render(request,'index.html')
+#function fo displaying the user details
+def userDetail(request):
+    
+    return render(request,'userDetail.html')
