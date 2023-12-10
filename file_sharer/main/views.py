@@ -70,19 +70,15 @@ def login(request):
 #function for view page/index page
 def index(request):
     #loading session
-    if request.method=='POST':
-        print("hello")
     currentSession=request.session.get('userId')
     #loading files of the user
     userFiles=Files.objects.filter(userId=request.session.get('userId'))
     sharedAccessed=FileAccess.objects.filter(userId=request.session.get('userId'))
     sharedFiles=[]
+    #getting all the users shared files
     for file in sharedAccessed:
         sharedFiles.append(Files.objects.get(id=file.fileId))
        
-    allFiles=Files.objects.all()
-    
-    
     return render(request,'index.html',{'currentSession':currentSession,'userFiles':userFiles,'sharedFiles':sharedFiles})
 #function for uploading file
 def uploadFile(request):
@@ -109,9 +105,9 @@ def searchUser(request):
               fileShare=FileAccess(userId=userId,fileId=fileId)
               fileShare.save()  
            return render(request,'userDetail.html',{'userDetail':searchUser,'shared':"successfully shared"})
-        #print(searchUser.userEmail)
         return render(request,'userDetail.html',{'userDetail':searchUser})
     return render(request,'index.html')
+
 #function for sharing file
 def shareFile(request):
     return render(request,'index.html')
@@ -121,5 +117,4 @@ def logout(request):
     return redirect('/')
 #function fo displaying the user details
 def userDetail(request):
-    
     return render(request,'userDetail.html')
