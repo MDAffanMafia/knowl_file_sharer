@@ -27,6 +27,9 @@
                             <a class="nav-link" href="/signUp">SignUp</a>
                         </li>
                     {% endif %}  
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
                     <li style='margin-left: 50px; float: left' class="nav-item">
                         <form action="/uploadFile" method="post" enctype="multipart/form-data" class="d-flex">
                             {% csrf_token %}
@@ -37,8 +40,10 @@
                     
     
                 </ul>
+                
                 <form action="/searchUser" method="post" class="d-flex" role="search">
                     {% csrf_token %}
+                    <input type="hidden" name="routeStatus" name="fromSearch">
                     <input class="form-control me-2" type="search" name="userEmail" placeholder="Search others" aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>

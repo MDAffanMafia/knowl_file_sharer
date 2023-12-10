@@ -29,6 +29,11 @@
                         <button type="submit" class="btn btn-primary btn-block">Login</button>
                     </form>
                 </div>
+                {%if loginStatus%}
+                <div class="alert alert-danger" role="alert">
+                   {{loginStatus}}
+                  </div>
+                {%endif%}  
                 <div class="card-footer text-center">
                     <p class="mb-0">Don't have an account? <a href="/signUp">Sign up here</a></p>
                 </div>

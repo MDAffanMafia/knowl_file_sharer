@@ -14,7 +14,7 @@ def fetchUserByEmail(userEmail):
     allUser=User.objects.all()
     for user in allUser:
         if user.userEmail==userEmail:
-            return {'userName':user.name,'email':user.userEmail,'userId':user.id}    
+            return {'userName':user.name,'userEmail':user.userEmail,'userId':user.id}    
         return {'userName':"not found",'email':"not found"}
 #fetching the user by username and password      
 def fetchUser(request,userName,password):
@@ -60,7 +60,7 @@ def login(request):
         #if userName or password will not match
         #checking whether user exist
         if fetchUser(request,userName,password):
-            return render(request,'index.html')
+            return redirect('/')
         message="UserName or password incorrect"
         return  render(request,'login.html',{'loginStatus':message})     
     return render(request,'login.html')
@@ -78,10 +78,7 @@ def index(request):
     sharedAccessed=FileAccess.objects.filter(userId=request.session.get('userId'))
     sharedFiles=[]
     for file in sharedAccessed:
-        print(sharedFiles.append(Files.objects.get(id=file.fileId)))
-        print(Files.objects.filter(id=file.fileId))
-        for file in Files.objects.filter(id=file.fileId):
-            print(file.userId)
+        sharedFiles.append(Files.objects.get(id=file.fileId))
        
     allFiles=Files.objects.all()
     
@@ -103,15 +100,16 @@ def uploadFile(request):
 def searchUser(request):
     if request.method=='POST':
         userEmail=request.POST['userEmail']
-        fileId=request.POST['fileId']
         searchUser=fetchUserByEmail(userEmail)
         fromRoute=request.POST['routeStatus']
         if fromRoute=="fromIndex":
            if searchUser['userName']!="not found":
+              fileId=request.POST['fileId'] 
               userId=searchUser['userId']
               fileShare=FileAccess(userId=userId,fileId=fileId)
               fileShare.save()  
            return render(request,'userDetail.html',{'userDetail':searchUser,'shared':"successfully shared"})
+        #print(searchUser.userEmail)
         return render(request,'userDetail.html',{'userDetail':searchUser})
     return render(request,'index.html')
 #function for sharing file
@@ -119,7 +117,8 @@ def shareFile(request):
     return render(request,'index.html')
 #function for logout
 def logout(request):
-    return render(request,'index.html')
+    request.session.clear()
+    return redirect('/')
 #function fo displaying the user details
 def userDetail(request):
     
