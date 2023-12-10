@@ -70,16 +70,23 @@ def login(request):
 #function for view page/index page
 def index(request):
     #loading session
+    if request.method=='POST':
+        print("hello")
     currentSession=request.session.get('userId')
-    #loading files of the user 
+    #loading files of the user
     userFiles=Files.objects.filter(userId=request.session.get('userId'))
-    sharedFiles=FileAccess.objects.filter(userId=request.session.get('userId'))
+    sharedAccessed=FileAccess.objects.filter(userId=request.session.get('userId'))
+    sharedFiles=[]
+    for file in sharedAccessed:
+        print(sharedFiles.append(Files.objects.get(id=file.fileId)))
+        print(Files.objects.filter(id=file.fileId))
+        for file in Files.objects.filter(id=file.fileId):
+            print(file.userId)
+       
     allFiles=Files.objects.all()
     
     
-    
-    
-    return render(request,'index.html',{'currentSession':currentSession,'userFiles':userFiles,'sharedFiles':sharedFiles,'allFiles':allFiles})
+    return render(request,'index.html',{'currentSession':currentSession,'userFiles':userFiles,'sharedFiles':sharedFiles})
 #function for uploading file
 def uploadFile(request):
     if request.method=='POST':
